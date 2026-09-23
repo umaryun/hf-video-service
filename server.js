@@ -14,9 +14,15 @@ import express from 'express';
 import crypto from 'node:crypto';
 import { InferenceClient } from '@huggingface/inference';
 
+try {
+  process.loadEnvFile();
+} catch {
+  // .env is optional; in production (Railway), env vars are injected directly
+}
+
 const {
   HF_TOKEN,
-  HF_VIDEO_MODEL = 'Wan-AI/Wan2.1-T2V-1.3B',
+  HF_VIDEO_MODEL = 'Lightricks/LTX-Video-0.9.5',
   HF_PROVIDER = 'fal-ai',
   API_KEY,
   PORT = 3000,
