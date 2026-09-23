@@ -207,7 +207,25 @@ curl http://localhost:3000/jobs/6c208fd0-0a20-435a-b38d-e462ca51655f/video \
 
 ---
 
-## Deployment (Railway)
+## Deployment
+
+### Vercel (Serverless — Recommended)
+
+Because the async job flow is 100% stateless and delegates queue management to fal-ai in the cloud, it runs seamlessly on Vercel Serverless Functions:
+
+1. Push your repository to GitHub.
+2. In [Vercel](https://vercel.com), import your repository.
+3. In **Settings → Environment Variables**, add:
+   - `HF_TOKEN`: Your Hugging Face user token
+   - `HF_VIDEO_MODEL`: `Lightricks/LTX-Video-0.9.5`
+   - `HF_PROVIDER`: `fal-ai`
+   - `API_KEY`: Your custom secret key
+4. Deploy! `vercel.json` will automatically route all requests to `server.js`.
+
+> [!NOTE]
+> On Vercel, always use the **Asynchronous flow (`POST /jobs` → `GET /jobs/:id` → `GET /jobs/:id/video`)** in n8n. Because video generation takes ~40s, a synchronous `POST /generate` request would exceed Vercel's 10-second serverless execution limit.
+
+### Railway / Docker (Container)
 
 1. Push your repository to GitHub.
 2. In [Railway](https://railway.app), create a **New Project** and select your GitHub repo.
