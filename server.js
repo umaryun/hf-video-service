@@ -177,6 +177,32 @@ async function generateVideo(params) {
 const app = express();
 app.use(express.json({ limit: '256kb' }));
 
+// URL normalization for Vercel and serverless proxies
+app.use((req, _res, next) => {
+  // 1. If Vercel rewrote the path, restore the original incoming path from header
+  const matched = req.headers['x-matched-path'];
+  if (matched && typeof matched === 'string' && !matched.endsWith('.js')) {
+    req.url = matched;
+  }
+  // 2. Strip /server.js, /api/index.js, or /api prefixes if present
+  if (req.url.startsWith('/server.js/')) {
+    req.url = req.url.slice('/server.js'.length);
+  } else if (req.url.startsWith('/api/index.js/')) {
+    req.url = req.url.slice('/api/index.js'.length);
+  } else if (req.url.startsWith('/api/')) {
+    req.url = req.url.slice('/api'.length);
+  }
+  // 3. Fallback: if req.url is literally '/server.js' or '/api/index.js' or '/api'
+  if (req.url === '/server.js' || req.url === '/api/index.js' || req.url === '/api') {
+    if (req.method === 'POST') {
+      req.url = '/jobs';
+    } else {
+      req.url = '/';
+    }
+  }
+  next();
+});
+
 // Simple request log
 app.use((req, res, next) => {
   const startedAt = Date.now();
